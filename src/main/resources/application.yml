@@ -1,0 +1,39 @@
+# Server configuration
+server:
+  port: 8081
+  contextPath:
+
+# Spring configuration
+spring:
+  jackson:
+    serialization:
+      INDENT_OUTPUT: true
+  datasource:
+#    url: jdbc:mysql://rdsqmmafmimvaum.mysql.rds.aliyuncs.com:3306/fmss?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true
+#    username: huaxiaguanjia
+#    password: huaxiaguanjia123456
+#    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/fmss?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.jdbc.Driver
+
+# spring-security 暂时屏蔽
+security:
+  basic:
+    enabled: false
+#  ignored: /**
+# Logging configuration
+logging:
+  level:
+    org.springframework:
+      data: DEBUG
+      fmssapi.auth: DEBUG
+#jwt fmssapi.auth
+jwt:
+  header: Authorization
+  secret: whoisyourdaddy
+  expiration: 604800
+#log logback
+
+
