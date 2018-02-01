@@ -301,7 +301,7 @@ public class StringUtil {
     }
 
 
-/***/
+/***
     public static void main(String[] args){
 //        ScriptEngineManager manager = new ScriptEngineManager();
 //        ScriptEngine se = manager.getEngineByName("js");
@@ -327,5 +327,6 @@ public class StringUtil {
 //                Double a4 =-118947.43;
 //                System.out.println(a1==StringUtil.round2(a2+a3+a4).doubleValue());
     }
+    ****/
 
 }

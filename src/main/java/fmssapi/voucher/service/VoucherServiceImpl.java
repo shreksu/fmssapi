@@ -206,4 +206,13 @@ public class VoucherServiceImpl implements VoucherService{
     public void update(Voucher voucher) {
         voucherMapper.updateZhiName(voucher);
     }
+
+    @Override
+    public void cancelVoucher(Voucher voucher) {
+        voucherDetailService.deleteByVoucherId(voucher.getId());
+        voucher.setDebit(0l);
+        voucher.setCredit(0l);
+        voucher.setDescription("作废");
+        voucherMapper.updateByObject(voucher);
+    }
 }

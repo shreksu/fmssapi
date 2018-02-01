@@ -106,4 +106,10 @@ public interface VoucherService {
      * @param voucher
      */
     void update(Voucher voucher);
+
+    /**
+     * 作废一张凭证
+     * @param voucher
+     */
+    void cancelVoucher(Voucher voucher);
 }

@@ -6,6 +6,7 @@ import fmssapi.curtain.service.CurtainBalanceService;
 import fmssapi.curtain.service.CurtainService;
 import fmssapi.subject.model.Subject;
 import fmssapi.subject.service.SubjectService;
+import fmssapi.util.CnUpperCaser;
 import fmssapi.util.ExcelUtil;
 import fmssapi.util.StringUtil;
 import fmssapi.voucher.model.Voucher;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.util.*;
 
@@ -92,6 +94,45 @@ public class VoucherController {
         return voucherDetailService.getVoucherDetails(voucherId);
     }
 
+
+    /**
+     * 获得凭证的完整信息（包括凭证和凭证明细）
+     * @param voucherId
+     * @return
+     */
+    @RequestMapping(value = "getVoucherInfo", method = RequestMethod.GET)
+    public Map<String,Object> getVoucherInfo(Long voucherId){
+        Map<String,Object> result = new HashMap<>();
+        Voucher voucher = voucherService.findById(voucherId);
+        result.put("voucher",voucher);
+        result.put("details",voucherDetailService.getVoucherDetails(voucherId));
+        return result;
+    }
+
+    /**
+     * 获得打印凭证所需信息
+     * @param voucherId
+     * @return
+     */
+    @RequestMapping(value = "getVoucherPrintInfo", method = RequestMethod.GET)
+    public Map<String,Object> getVoucherPrintInfo(Long voucherId){
+        Map<String,Object> result = new HashMap<>();
+        Voucher voucher = voucherService.findById(voucherId);
+        result.put("voucher",voucher);
+        result.put("curtain", curtainService.findById(voucher.getCurtainId()));
+        List<VoucherDetail> details = voucherDetailService.getVoucherDetails(voucherId);
+        VoucherDetail obj = new VoucherDetail();
+        obj.setDescription("附单据数" + (voucher.getBillNum() == null ? " " : String.valueOf(voucher.getBillNum())) + "张");
+        Subject subject = new Subject();
+        subject.setFullName("合计 "+ CnUpperCaser.number2CNMontrayUnit(new BigDecimal(voucher.getDebit())));
+        obj.setSubject(subject);
+        obj.setDebit(voucher.getDebit());
+        obj.setCredit(voucher.getCredit());
+        details.add(obj);
+        result.put("details",details);
+        return result;
+    }
+
     /**
      * 获得状态选项
      * @return
@@ -159,7 +200,7 @@ public class VoucherController {
                 hasAudit++;
             }
         }
-        String message = "审核成功"+hasAudit+"张凭证，未成功"+(length-hasAudit)+"张凭证;"+mess==null?"":mess;
+        String message = "审核成功"+hasAudit+"张凭证，未成功"+(length-hasAudit)+"张凭证;"+ (mess==null?"":mess);
         Map<String,String> result = new HashMap<>();
         result.put("message",message);
         return result;
@@ -210,6 +251,20 @@ public class VoucherController {
             voucherService.cancelAudit(voucher);
         }
         result.put("message","1");
+        return result;
+    }
+
+    /**
+     * 作废一张凭证
+     * @param voucherId
+     * @return
+     */
+    @RequestMapping(value = "cancelVoucher", method = RequestMethod.GET)
+    public Map<String,String> cancelVoucher(Long voucherId){
+        Voucher voucher = voucherService.findById(voucherId);
+        Map<String,String> result = new HashMap<>();
+        voucherService.cancelVoucher(voucher);
+        result.put("message", "1");
         return result;
     }
 
@@ -270,7 +325,7 @@ public class VoucherController {
             response.addHeader("Content-Disposition", "attachment;filename="
                     + URLEncoder.encode(fileName, "UTF-8"));
             String[] headers = {"记账日期", "凭证号", "科目编码", "科目名称", "摘要",
-                    "借方", "贷方"};
+                    "借方", "贷方", "关联号"};
             List<List<String>> dataList = new ArrayList<>();
             for(VoucherDetail detail : detailList){
                 Voucher voucher = detail.getVoucher();
@@ -281,8 +336,9 @@ public class VoucherController {
                 list.add(detail.getSubject().getName());
 
                 list.add(detail.getDescription());
-                list.add(String.valueOf(detail.getDebit()==null?"":detail.getDebit()));
+                list.add(String.valueOf(detail.getDebit() == null ? "" : detail.getDebit()));
                 list.add(String.valueOf(detail.getCredit() == null ? "" : detail.getCredit()));
+                list.add(voucher.getSysCode());
                 dataList.add(list);
             }
             ExcelUtil.exportExcel("明细账", headers, dataList, outputStream);

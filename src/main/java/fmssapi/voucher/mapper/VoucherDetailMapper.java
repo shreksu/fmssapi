@@ -20,7 +20,7 @@ public interface VoucherDetailMapper {
     @Options(useGeneratedKeys = true,keyColumn = "ID",keyProperty="id")
     int insertByObject(VoucherDetail voucherDetail);
 
-    @Update("UPDATE VOUCHERDETAIL SET CREDIT=#{credit},DEBIT=#{debit} WHERE ID=#{id}")
+    @Update("UPDATE VOUCHERDETAIL SET CREDIT=#{credit},DEBIT=#{debit},SUBJECT_ID=#{subject.id},DESCRIPTION=#{description} WHERE ID=#{id}")
     void updateByObject(VoucherDetail voucherDetail);
 
     @Select("SELECT * FROM VOUCHERDETAIL WHERE ID = #{id}")
